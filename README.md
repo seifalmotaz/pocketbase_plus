@@ -17,6 +17,10 @@ Say goodbye to manual PocketBase model generation and let **Pocketbase Plus** do
    ```bash
    dart pub global activate -s git https://github.com/seifalmotaz/pocketbase_plus
    ```
+   or
+   ```bash
+   dart pub global activate pocketbase_plus
+   ```
 4. **Run the magic**: 
    ```bash
    pb_gen
