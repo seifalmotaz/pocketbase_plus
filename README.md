@@ -24,3 +24,11 @@ Say goodbye to manual PocketBase model generation and let **Pocketbase Plus** do
 And boom 💥! Your models are ready to roll!
 
 Happy coding! ✨
+
+## Next Steps
+
+- Support for additional file types.
+- Auto-generate CRUD functions directly within the models.
+- Implement static `list` functions for fetching multiple records from the model.
+
+More awesome features coming soon... Stay tuned!

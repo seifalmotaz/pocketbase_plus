@@ -1,6 +1,7 @@
 name: pocketbase_plus
-description: A starting point for Dart libraries or applications.
-version: 1.0.0
+description: Pocketbase Plus is a Dart package that automates model generation for your PocketBase projects. Quick setup, less boilerplate, more time to build awesome apps!
+version: 0.0.1
+repository: https://github.com/seifalmotaz/pocketbase_plus
 # repository: https://github.com/my_org/my_repo
 
 environment:
@@ -18,3 +19,8 @@ dev_dependencies:
 
 executables:
   pb_gen: main
+
+topics:
+  - pocketbase
+  - json
+  - models
