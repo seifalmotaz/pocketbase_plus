@@ -8,12 +8,26 @@ import 'package:args/args.dart';
 /// Authenticates with PocketBase and generates Dart models for collections.
 Future<void> main(List<String> arguments) async {
   final parser = ArgParser()
-    ..addOption('config',
-        abbr: 'c',
-        defaultsTo: './pocketbase.yaml',
-        help: 'Configuration file path.');
+    ..addOption(
+      'config',
+      abbr: 'c',
+      defaultsTo: './pocketbase.yaml',
+      help: 'Configuration file path.',
+    )
+    ..addFlag(
+      'help',
+      abbr: 'h',
+      negatable: false,
+      help: 'Show help information.',
+    );
 
   final argResults = parser.parse(arguments);
+
+  if (argResults['help'] as bool) {
+    printHelp(parser);
+    exit(0);
+  }
+
   final configPath = argResults['config'] as String;
 
   print('Loading configuration from $configPath');
@@ -23,7 +37,7 @@ Future<void> main(List<String> arguments) async {
     config = loadConfiguration(configPath);
   } catch (e) {
     print('Error loading configuration: $e');
-    printHelp();
+    printHelp(parser);
     exit(1);
   }
 
@@ -84,7 +98,8 @@ class Config {
 
     final hostingConfig = pbConfig['hosting'];
     if (hostingConfig == null) {
-      throw Exception('Missing "hosting" section under "pocketbase" in configuration.');
+      throw Exception(
+          'Missing "hosting" section under "pocketbase" in configuration.');
     }
 
     final domain = hostingConfig['domain'];
@@ -92,7 +107,8 @@ class Config {
     final password = hostingConfig['password'];
 
     if (domain == null || email == null || password == null) {
-      throw Exception('Missing "domain", "email", or "password" in hosting configuration.');
+      throw Exception(
+          'Missing "domain", "email", or "password" in hosting configuration.');
     }
 
     final outputDirectory = pbConfig['output_directory'] ?? './lib/models';
@@ -118,10 +134,14 @@ Config loadConfiguration(String path) {
 }
 
 /// Prints help information.
-void printHelp() {
+void printHelp(ArgParser parser) {
+  print('Pocketbase Plus Model Generator\n');
+  print('Generates Dart models from your PocketBase collections.\n');
+  print('Usage:');
+  print('  dart run pocketbase_plus:main [options]\n');
+  print('Options:');
+  print(parser.usage);
   print('''
-Error: Invalid or missing configuration.
-
 Expected configuration file in YAML format with the following structure:
 
 pocketbase:
@@ -131,9 +151,6 @@ pocketbase:
     password: 'your-password'
   output_directory: './lib/models'  # Optional, default is './lib/models'
 
-Usage:
-  dart run script.dart --config path/to/config.yaml
-
 Example configuration file:
 
 pocketbase:
@@ -142,7 +159,6 @@ pocketbase:
     email: 'admin@example.com'
     password: 'your-password'
   output_directory: './lib/models'
-
 ''');
 }
 
@@ -240,8 +256,7 @@ void generateClassFields(StringBuffer buffer, List<SchemaField> schema) {
   buffer.writeln("  static const String Updated = 'updated';");
 
   for (var field in schema) {
-    buffer.writeln(
-        "  \n final ${getType(field)} ${removeSnake(field.name)};");
+    buffer.writeln("  \n final ${getType(field)} ${removeSnake(field.name)};");
     buffer.writeln(
         "  static const String ${removeSnake(capName(field.name))} = '${field.name}';");
   }
