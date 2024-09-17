@@ -18,18 +18,28 @@ install as dev dependency with:
 
 ## How It Works
 
-1. **Create a `pocketbase.yaml`** in your project.
+1. **Create a `pocketbase.yaml`** in your project or directly inside your `pubspec.yaml`.
 2. Fill it with your secret sauce like this:
-   ```yaml
-   hosting:
-     domain: {{YOUR POCKETBASE URL HERE}}
-     email: {{ADMIN EMAIL}}
-     password: {{ADMIN PASSWORD}}
-   ```
-4. **Run the magic**: 
-   ```bash
-   dart run pocketbase_plus:main
-   ```
+```yaml
+pocketbase:
+  hosting:
+    domain: 'https://your-pocketbase-domain.com'
+    email: 'your-email@example.com'
+    password: 'your-password'
+  output_directory: './lib/models'  # Optional, default is './lib/models'
+```
+
+4. **Run the magic**:
+
+```bash
+dart run pocketbase_plus:main
+```
+
+You can specify the configuration file path (e.g.: your pubspec.yaml) using the --config or -c option:
+```bash
+dart run pocketbase_plus:main --config pubspec.yaml
+```
+
 And boom 💥! Your models are ready to roll!
 
 Happy coding! ✨
