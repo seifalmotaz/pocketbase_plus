@@ -1,17 +1,18 @@
-// Model for Collection chats
+// This file is auto-generated. Do not modify manually.
+// Model for collection chats
 // ignore_for_file: constant_identifier_names
 
 import 'package:pocketbase/pocketbase.dart';
 
 class ChatsModel {
   // Fields
-  final String id;
+  final String? id;
   static const String Id = 'id';
 
-  final DateTime created;
+  final DateTime? created;
   static const String Created = 'created';
 
-  final DateTime updated;
+  final DateTime? updated;
   static const String Updated = 'updated';
 
   final dynamic user1;
@@ -27,9 +28,9 @@ class ChatsModel {
   static const String Blocked = 'blocked';
 
   const ChatsModel({
-    required this.id,
-    required this.created,
-    required this.updated,
+    this.id,
+    this.created,
+    this.updated,
     required this.user1,
     required this.user2,
     this.deletedAt,
@@ -43,7 +44,9 @@ class ChatsModel {
       updated: DateTime.parse(r.updated),
       user1: r.data['user1'],
       user2: r.data['user2'],
-      deletedAt: r.data['deleted_at'],
+      deletedAt: r.data['deleted_at'] != null
+          ? DateTime.parse(r.data['deleted_at'])
+          : null,
       blocked: r.data['blocked'],
     );
   }
@@ -52,7 +55,7 @@ class ChatsModel {
     return {
       'user1': user1,
       'user2': user2,
-      'deleted_at': deletedAt,
+      'deleted_at': deletedAt?.toIso8601String(),
       'blocked': blocked,
     };
   }

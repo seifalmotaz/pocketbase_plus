@@ -1,37 +1,37 @@
-// Model for Collection matches
+// This file is auto-generated. Do not modify manually.
+// Model for collection matches
 // ignore_for_file: constant_identifier_names
 
 import 'package:pocketbase/pocketbase.dart';
 
 enum OverallStateEnum {
-  pending,
-  matched,
-  unmatched,
-  cancelled,
-}
+  pending("pending"),
+  matched("matched"),
+  unmatched("unmatched"),
+  cancelled("cancelled"),
+  ;
 
-final _overallStateEnumToMap = {
-  OverallStateEnum.pending: "pending",
-  OverallStateEnum.matched: "matched",
-  OverallStateEnum.unmatched: "unmatched",
-  OverallStateEnum.cancelled: "cancelled",
-};
-final _overallStateEnumFromMap = {
-  "pending": OverallStateEnum.pending,
-  "matched": OverallStateEnum.matched,
-  "unmatched": OverallStateEnum.unmatched,
-  "cancelled": OverallStateEnum.cancelled,
-};
+  final String value;
+
+  const OverallStateEnum(this.value);
+
+  static OverallStateEnum fromValue(String value) {
+    return OverallStateEnum.values.firstWhere(
+      (enumValue) => enumValue.value == value,
+      orElse: () => throw ArgumentError("Invalid value: $value"),
+    );
+  }
+}
 
 class MatchesModel {
   // Fields
-  final String id;
+  final String? id;
   static const String Id = 'id';
 
-  final DateTime created;
+  final DateTime? created;
   static const String Created = 'created';
 
-  final DateTime updated;
+  final DateTime? updated;
   static const String Updated = 'updated';
 
   final String activity;
@@ -56,9 +56,9 @@ class MatchesModel {
   static const String OverallState = 'overall_state';
 
   const MatchesModel({
-    required this.id,
-    required this.created,
-    required this.updated,
+    this.id,
+    this.created,
+    this.updated,
     required this.activity,
     required this.user1,
     required this.user2,
@@ -76,10 +76,11 @@ class MatchesModel {
       activity: r.data['activity'],
       user1: r.data['user1'],
       user2: r.data['user2'],
-      dateTime: r.data['date_time'],
+      dateTime: DateTime.parse(r.data['date_time']! as String),
       user1State: r.data['user1_state'],
       user2State: r.data['user2_state'],
-      overallState: _overallStateEnumFromMap[r.data['overall_state']]!,
+      overallState:
+          OverallStateEnum.fromValue(r.data['overall_state']! as String),
     );
   }
 
@@ -88,10 +89,10 @@ class MatchesModel {
       'activity': activity,
       'user1': user1,
       'user2': user2,
-      'date_time': dateTime,
+      'date_time': dateTime.toIso8601String(),
       'user1_state': user1State,
       'user2_state': user2State,
-      'overall_state': _overallStateEnumToMap[overallState],
+      'overall_state': overallState.value,
     };
   }
 }
