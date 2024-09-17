@@ -230,13 +230,17 @@ void generateEnumForField(StringBuffer buffer, SchemaField field) {
 
   // Add a final String field and the constructor
   buffer.writeln('final String value;\n');
-  buffer.writeln('const ${capName(removeSnake(field.name))}Enum(this.value);\n');
+  buffer
+      .writeln('const ${capName(removeSnake(field.name))}Enum(this.value);\n');
 
   // Add fromValue static method
-  buffer.writeln('static ${capName(removeSnake(field.name))}Enum fromValue(String value) {');
-  buffer.writeln('  return ${capName(removeSnake(field.name))}Enum.values.firstWhere(');
+  buffer.writeln(
+      'static ${capName(removeSnake(field.name))}Enum fromValue(String value) {');
+  buffer.writeln(
+      '  return ${capName(removeSnake(field.name))}Enum.values.firstWhere(');
   buffer.writeln('    (enumValue) => enumValue.value == value,');
-  buffer.writeln('    orElse: () => throw ArgumentError("Invalid value: \$value"),');
+  buffer.writeln(
+      '    orElse: () => throw ArgumentError("Invalid value: \$value"),');
   buffer.writeln('  );');
   buffer.writeln('}\n');
 
@@ -244,17 +248,16 @@ void generateEnumForField(StringBuffer buffer, SchemaField field) {
   buffer.writeln();
 }
 
-
 /// Generates the fields and their corresponding constants for the class.
 void generateClassFields(StringBuffer buffer, List<SchemaField> schema) {
   buffer.writeln(" \n // Fields");
-  buffer.writeln("  final String id;");
+  buffer.writeln("  final String? id;");
   buffer.writeln("  static const String Id = 'id';");
 
-  buffer.writeln("  \n final DateTime created;");
+  buffer.writeln("  \n final DateTime? created;");
   buffer.writeln("  static const String Created = 'created';");
 
-  buffer.writeln("  \n final DateTime updated;");
+  buffer.writeln("  \n final DateTime? updated;");
   buffer.writeln("  static const String Updated = 'updated';");
 
   for (var field in schema) {
@@ -268,9 +271,9 @@ void generateClassFields(StringBuffer buffer, List<SchemaField> schema) {
 void generateConstructor(
     String colName, StringBuffer buffer, List<SchemaField> schema) {
   buffer.writeln("\n  const ${removeSnake(capName(colName))}Model({");
-  buffer.writeln("    required this.id,");
-  buffer.writeln("    required this.created,");
-  buffer.writeln("    required this.updated,");
+  buffer.writeln("    this.id,");
+  buffer.writeln("    this.created,");
+  buffer.writeln("    this.updated,");
 
   for (var field in schema) {
     buffer.writeln(
@@ -295,12 +298,12 @@ void generateFactoryConstructor(
       buffer.writeln(
           "      ${removeSnake(field.name)}: ${capName(removeSnake(field.name))}Enum.fromValue(r.data['${field.name}']! as String),");
     } else if (field.type == 'date') {
-      if (field.required) { 
+      if (field.required) {
         buffer.writeln(
-             "       ${removeSnake(field.name)}: DateTime.parse(r.data['${field.name}']! as String),");
+            "       ${removeSnake(field.name)}: DateTime.parse(r.data['${field.name}']! as String),");
       } else {
         buffer.writeln(
-          "      ${removeSnake(field.name)}: r.data['${field.name}'] != null ? DateTime.parse(r.data['${field.name}']) : null,");
+            "      ${removeSnake(field.name)}: r.data['${field.name}'] != null ? DateTime.parse(r.data['${field.name}']) : null,");
       }
     } else {
       buffer.writeln(
@@ -319,11 +322,16 @@ void generateToMapMethod(StringBuffer buffer, List<SchemaField> schema) {
 
   for (var field in schema) {
     if (field.type == 'select') {
-      buffer.writeln(
-          "      '${field.name}': ${removeSnake(field.name)}.value,");
+      buffer
+          .writeln("      '${field.name}': ${removeSnake(field.name)}.value,");
     } else if (field.type == 'date') {
-      buffer.writeln(
-          "      '${field.name}': ${removeSnake(field.name)}?.toIso8601String(),");
+      if (field.required) {
+        buffer.writeln(
+            "      '${field.name}': ${removeSnake(field.name)}.toIso8601String(),");
+      } else {
+        buffer.writeln(
+            "      '${field.name}': ${removeSnake(field.name)}?.toIso8601String(),");
+      }
     } else {
       buffer.writeln("      '${field.name}': ${removeSnake(field.name)},");
     }
