@@ -2,32 +2,148 @@ import 'dart:io';
 import 'package:path/path.dart' as pp;
 import 'package:pocketbase/pocketbase.dart';
 import 'package:yaml/yaml.dart';
+import 'package:args/args.dart';
 
 /// Entry point of the application
 /// Authenticates with PocketBase and generates Dart models for collections.
-Future<void> main() async {
-  final config = loadConfiguration('./pocketbase.yaml');
-  final pb = PocketBase(config['hosting']['domain']);
+Future<void> main(List<String> arguments) async {
+  final parser = ArgParser()
+    ..addOption('config',
+        abbr: 'c',
+        defaultsTo: './pocketbase.yaml',
+        help: 'Configuration file path.');
 
-  await authenticate(
-    pb,
-    config['hosting']['email'],
-    config['hosting']['password'],
-  );
+  final argResults = parser.parse(arguments);
+  final configPath = argResults['config'] as String;
+
+  print('Loading configuration from $configPath');
+
+  Config config;
+  try {
+    config = loadConfiguration(configPath);
+  } catch (e) {
+    print('Error loading configuration: $e');
+    printHelp();
+    exit(1);
+  }
+
+  print('Authenticating with PocketBase');
+
+  final pb = PocketBase(config.domain);
+
+  try {
+    await authenticate(
+      pb,
+      config.email,
+      config.password,
+    );
+  } catch (e) {
+    print('Authentication failed: $e');
+    print('Please check your email and password in the configuration file.');
+    exit(1);
+  }
+
+  print('Fetching collections from PocketBase');
 
   final collections = await pb.collections.getFullList();
 
-  createModelsDirectory('./lib/models');
-  generateModels(collections);
+  print('Creating models directory at ${config.outputDirectory}');
 
-  formatGeneratedModels('./lib/models');
+  createModelsDirectory(config.outputDirectory);
+
+  print('Generating models');
+
+  generateModels(collections, config.outputDirectory);
+
+  print('Formatting generated models');
+
+  formatGeneratedModels(config.outputDirectory);
+
+  print('Done');
+}
+
+/// Class representing the configuration.
+class Config {
+  final String domain;
+  final String email;
+  final String password;
+  final String outputDirectory;
+
+  Config({
+    required this.domain,
+    required this.email,
+    required this.password,
+    required this.outputDirectory,
+  });
+
+  factory Config.fromYaml(YamlMap yaml) {
+    final pbConfig = yaml['pocketbase'];
+    if (pbConfig == null) {
+      throw Exception('Missing "pocketbase" section in configuration.');
+    }
+
+    final hostingConfig = pbConfig['hosting'];
+    if (hostingConfig == null) {
+      throw Exception('Missing "hosting" section under "pocketbase" in configuration.');
+    }
+
+    final domain = hostingConfig['domain'];
+    final email = hostingConfig['email'];
+    final password = hostingConfig['password'];
+
+    if (domain == null || email == null || password == null) {
+      throw Exception('Missing "domain", "email", or "password" in hosting configuration.');
+    }
+
+    final outputDirectory = pbConfig['output_directory'] ?? './lib/models';
+
+    return Config(
+      domain: domain,
+      email: email,
+      password: password,
+      outputDirectory: outputDirectory,
+    );
+  }
 }
 
 /// Loads the PocketBase configuration from a YAML file.
-YamlMap loadConfiguration(String path) {
+Config loadConfiguration(String path) {
   final file = File(pp.normalize(path));
+  if (!file.existsSync()) {
+    throw Exception('Configuration file not found at $path');
+  }
   final yamlString = file.readAsStringSync();
-  return loadYaml(yamlString);
+  final yaml = loadYaml(yamlString);
+  return Config.fromYaml(yaml);
+}
+
+/// Prints help information.
+void printHelp() {
+  print('''
+Error: Invalid or missing configuration.
+
+Expected configuration file in YAML format with the following structure:
+
+pocketbase:
+  hosting:
+    domain: 'https://your-pocketbase-domain.com'
+    email: 'your-email@example.com'
+    password: 'your-password'
+  output_directory: './lib/models'  # Optional, default is './lib/models'
+
+Usage:
+  dart run script.dart --config path/to/config.yaml
+
+Example configuration file:
+
+pocketbase:
+  hosting:
+    domain: 'https://pocketbase.example.com'
+    email: 'admin@example.com'
+    password: 'your-password'
+  output_directory: './lib/models'
+
+''');
 }
 
 /// Authenticates an admin user with PocketBase.
@@ -39,15 +155,15 @@ Future<void> authenticate(PocketBase pb, String email, String password) async {
 void createModelsDirectory(String path) {
   final directory = Directory(path);
   if (!directory.existsSync()) {
-    directory.createSync();
+    directory.createSync(recursive: true);
   }
 }
 
 /// Generates Dart models for all collections.
-void generateModels(List<CollectionModel> collections) {
+void generateModels(List<CollectionModel> collections, String outputDirectory) {
   for (var collection in collections) {
     final modelContent = generateModelForCollection(collection);
-    final filePath = 'lib/models/${collection.name}.dart';
+    final filePath = pp.join(outputDirectory, '${collection.name}.dart');
     File(filePath).writeAsStringSync(modelContent);
   }
 }
@@ -62,8 +178,9 @@ String generateModelForCollection(CollectionModel collection) {
   final buffer = StringBuffer();
 
   // Add file documentation and imports
-  buffer.writeln("// Model for Collection ${collection.name}");
-  buffer.writeln("// ignore_for_file: constant_identifier_names");
+  buffer.writeln('// This file is auto-generated. Do not modify manually.');
+  buffer.writeln('// Model for collection ${collection.name}');
+  buffer.writeln('// ignore_for_file: constant_identifier_names');
   buffer.writeln();
   buffer.writeln("import 'package:pocketbase/pocketbase.dart';");
   buffer.writeln();
@@ -93,20 +210,21 @@ void generateEnumForField(StringBuffer buffer, SchemaField field) {
     buffer.writeln('${removeSnake(option)},');
   }
   buffer.writeln('}');
-
+  buffer.writeln();
   buffer.writeln('final _${removeSnake(field.name)}EnumToMap = {');
   for (var option in field.options['values']) {
     buffer.writeln(
         '${capName(removeSnake(field.name))}Enum.${removeSnake(option)}: "$option",');
   }
   buffer.writeln('};');
-
+  buffer.writeln();
   buffer.writeln('final _${removeSnake(field.name)}EnumFromMap = {');
   for (var option in field.options['values']) {
     buffer.writeln(
         '"$option": ${capName(removeSnake(field.name))}Enum.${removeSnake(option)},');
   }
   buffer.writeln('};');
+  buffer.writeln();
 }
 
 /// Generates the fields and their corresponding constants for the class.
@@ -122,7 +240,8 @@ void generateClassFields(StringBuffer buffer, List<SchemaField> schema) {
   buffer.writeln("  static const String Updated = 'updated';");
 
   for (var field in schema) {
-    buffer.writeln("  \n final ${getType(field)} ${removeSnake(field.name)};");
+    buffer.writeln(
+        "  \n final ${getType(field)} ${removeSnake(field.name)};");
     buffer.writeln(
         "  static const String ${removeSnake(capName(field.name))} = '${field.name}';");
   }
@@ -158,6 +277,9 @@ void generateFactoryConstructor(
     if (field.type == 'select') {
       buffer.writeln(
           "      ${removeSnake(field.name)}: _${removeSnake(field.name)}EnumFromMap[r.data['${field.name}']]!,");
+    } else if (field.type == 'date') {
+      buffer.writeln(
+          "      ${removeSnake(field.name)}: r.data['${field.name}'] != null ? DateTime.parse(r.data['${field.name}']) : null,");
     } else {
       buffer.writeln(
           "      ${removeSnake(field.name)}: r.data['${field.name}'],");
@@ -177,6 +299,9 @@ void generateToMapMethod(StringBuffer buffer, List<SchemaField> schema) {
     if (field.type == 'select') {
       buffer.writeln(
           "      '${field.name}': _${removeSnake(field.name)}EnumToMap[${removeSnake(field.name)}],");
+    } else if (field.type == 'date') {
+      buffer.writeln(
+          "      '${field.name}': ${removeSnake(field.name)}?.toIso8601String(),");
     } else {
       buffer.writeln("      '${field.name}': ${removeSnake(field.name)},");
     }
