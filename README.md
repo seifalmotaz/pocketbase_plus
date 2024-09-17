@@ -40,6 +40,11 @@ You can specify the configuration file path (e.g.: your pubspec.yaml) using the 
 dart run pocketbase_plus:main --config pubspec.yaml
 ```
 
+Quick help: (-h or --help)
+```bash
+dart run pocketbase_plus:main --help
+```
+
 And boom 💥! Your models are ready to roll!
 
 Happy coding! ✨
