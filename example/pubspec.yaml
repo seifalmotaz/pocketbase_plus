@@ -15,3 +15,13 @@ dependencies:
 dev_dependencies:
   lints: ^3.0.0
   test: ^1.24.0
+  
+  pocketbase_plus:
+    git: https://github.com/seifalmotaz/pocketbase_plus
+
+pocketbase:
+  hosting:
+    domain: 'https://your-pocketbase-domain.com'
+    email: 'your-email@example.com'
+    password: 'your-password'
+  output_directory: './lib/models'
