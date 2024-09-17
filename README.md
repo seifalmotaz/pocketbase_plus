@@ -3,6 +3,19 @@
 
 Say goodbye to manual PocketBase model generation and let **Pocketbase Plus** do the heavy lifting! 😎
 
+## Installation inside your project
+
+install as dev dependency with:
+
+
+   ```bash
+   dart pub add 'dev:pocketbase_plus:{"git":"https://github.com/seifalmotaz/pocketbase_plus"}'   
+   ```
+   or
+   ```bash
+   dart pub add dev:pocketbase_plus
+   ```
+
 ## How It Works
 
 1. **Create a `pocketbase.yaml`** in your project.
@@ -13,17 +26,9 @@ Say goodbye to manual PocketBase model generation and let **Pocketbase Plus** do
      email: {{ADMIN EMAIL}}
      password: {{ADMIN PASSWORD}}
    ```
-3. **Install the package**: 
-   ```bash
-   dart pub global activate -s git https://github.com/seifalmotaz/pocketbase_plus
-   ```
-   or
-   ```bash
-   dart pub global activate pocketbase_plus
-   ```
 4. **Run the magic**: 
    ```bash
-   pb_gen
+   dart run pocketbase_plus:main
    ```
 And boom 💥! Your models are ready to roll!
 
