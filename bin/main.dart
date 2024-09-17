@@ -221,27 +221,29 @@ String generateModelForCollection(CollectionModel collection) {
 
 /// Generates an enum for a 'select' field in the collection schema.
 void generateEnumForField(StringBuffer buffer, SchemaField field) {
+  // Start the enum definition with constructor
   buffer.writeln('enum ${capName(removeSnake(field.name))}Enum {');
   for (var option in field.options['values']) {
-    buffer.writeln('${removeSnake(option)},');
+    buffer.writeln('${removeSnake(option)}("$option"),');
   }
+  buffer.writeln(';\n');
+
+  // Add a final String field and the constructor
+  buffer.writeln('final String value;\n');
+  buffer.writeln('const ${capName(removeSnake(field.name))}Enum(this.value);\n');
+
+  // Add fromValue static method
+  buffer.writeln('static ${capName(removeSnake(field.name))}Enum fromValue(String value) {');
+  buffer.writeln('  return ${capName(removeSnake(field.name))}Enum.values.firstWhere(');
+  buffer.writeln('    (enumValue) => enumValue.value == value,');
+  buffer.writeln('    orElse: () => throw ArgumentError("Invalid value: \$value"),');
+  buffer.writeln('  );');
+  buffer.writeln('}\n');
+
   buffer.writeln('}');
   buffer.writeln();
-  buffer.writeln('final _${removeSnake(field.name)}EnumToMap = {');
-  for (var option in field.options['values']) {
-    buffer.writeln(
-        '${capName(removeSnake(field.name))}Enum.${removeSnake(option)}: "$option",');
-  }
-  buffer.writeln('};');
-  buffer.writeln();
-  buffer.writeln('final _${removeSnake(field.name)}EnumFromMap = {');
-  for (var option in field.options['values']) {
-    buffer.writeln(
-        '"$option": ${capName(removeSnake(field.name))}Enum.${removeSnake(option)},');
-  }
-  buffer.writeln('};');
-  buffer.writeln();
 }
+
 
 /// Generates the fields and their corresponding constants for the class.
 void generateClassFields(StringBuffer buffer, List<SchemaField> schema) {
@@ -291,10 +293,15 @@ void generateFactoryConstructor(
   for (var field in collection.schema) {
     if (field.type == 'select') {
       buffer.writeln(
-          "      ${removeSnake(field.name)}: _${removeSnake(field.name)}EnumFromMap[r.data['${field.name}']]!,");
+          "      ${removeSnake(field.name)}: ${capName(removeSnake(field.name))}Enum.fromValue(r.data['${field.name}']! as String),");
     } else if (field.type == 'date') {
-      buffer.writeln(
+      if (field.required) { 
+        buffer.writeln(
+             "       ${removeSnake(field.name)}: DateTime.parse(r.data['${field.name}']! as String),");
+      } else {
+        buffer.writeln(
           "      ${removeSnake(field.name)}: r.data['${field.name}'] != null ? DateTime.parse(r.data['${field.name}']) : null,");
+      }
     } else {
       buffer.writeln(
           "      ${removeSnake(field.name)}: r.data['${field.name}'],");
@@ -313,7 +320,7 @@ void generateToMapMethod(StringBuffer buffer, List<SchemaField> schema) {
   for (var field in schema) {
     if (field.type == 'select') {
       buffer.writeln(
-          "      '${field.name}': _${removeSnake(field.name)}EnumToMap[${removeSnake(field.name)}],");
+          "      '${field.name}': ${removeSnake(field.name)}.value,");
     } else if (field.type == 'date') {
       buffer.writeln(
           "      '${field.name}': ${removeSnake(field.name)}?.toIso8601String(),");
