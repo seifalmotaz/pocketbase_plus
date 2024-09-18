@@ -1,31 +1,35 @@
-// Model for Collection users
+// This file is auto-generated. Do not modify manually.
+// Model for collection users
 // ignore_for_file: constant_identifier_names
 
 import 'package:pocketbase/pocketbase.dart';
 
 enum GenderEnum {
-  male,
-  female,
-}
+  male("male"),
+  female("female"),
+  ;
 
-final _genderEnumToMap = {
-  GenderEnum.male: "male",
-  GenderEnum.female: "female",
-};
-final _genderEnumFromMap = {
-  "male": GenderEnum.male,
-  "female": GenderEnum.female,
-};
+  final String value;
+
+  const GenderEnum(this.value);
+
+  static GenderEnum fromValue(String value) {
+    return GenderEnum.values.firstWhere(
+      (enumValue) => enumValue.value == value,
+      orElse: () => throw ArgumentError("Invalid value: $value"),
+    );
+  }
+}
 
 class UsersModel {
   // Fields
-  final String id;
+  final String? id;
   static const String Id = 'id';
 
-  final DateTime created;
+  final DateTime? created;
   static const String Created = 'created';
 
-  final DateTime updated;
+  final DateTime? updated;
   static const String Updated = 'updated';
 
   final String? name;
@@ -53,9 +57,9 @@ class UsersModel {
   static const String DeletedAt = 'deleted_at';
 
   const UsersModel({
-    required this.id,
-    required this.created,
-    required this.updated,
+    this.id,
+    this.created,
+    this.updated,
     this.name,
     this.avatar,
     this.bio,
@@ -75,10 +79,12 @@ class UsersModel {
       avatar: r.data['avatar'],
       bio: r.data['bio'],
       phoneNumber: r.data['phone_number'],
-      gender: _genderEnumFromMap[r.data['gender']]!,
+      gender: GenderEnum.fromValue(r.data['gender']! as String),
       height: r.data['height'],
       age: r.data['age'],
-      deletedAt: r.data['deleted_at'],
+      deletedAt: r.data['deleted_at'] != null
+          ? DateTime.parse(r.data['deleted_at'])
+          : null,
     );
   }
 
@@ -88,10 +94,10 @@ class UsersModel {
       'avatar': avatar,
       'bio': bio,
       'phone_number': phoneNumber,
-      'gender': _genderEnumToMap[gender],
+      'gender': gender.value,
       'height': height,
       'age': age,
-      'deleted_at': deletedAt,
+      'deleted_at': deletedAt?.toIso8601String(),
     };
   }
 }

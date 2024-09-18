@@ -1,31 +1,35 @@
-// Model for Collection match_requests
+// This file is auto-generated. Do not modify manually.
+// Model for collection match_requests
 // ignore_for_file: constant_identifier_names
 
 import 'package:pocketbase/pocketbase.dart';
 
 enum StatusEnum {
-  pending,
-  matched,
-}
+  pending("pending"),
+  matched("matched"),
+  ;
 
-final _statusEnumToMap = {
-  StatusEnum.pending: "pending",
-  StatusEnum.matched: "matched",
-};
-final _statusEnumFromMap = {
-  "pending": StatusEnum.pending,
-  "matched": StatusEnum.matched,
-};
+  final String value;
+
+  const StatusEnum(this.value);
+
+  static StatusEnum fromValue(String value) {
+    return StatusEnum.values.firstWhere(
+      (enumValue) => enumValue.value == value,
+      orElse: () => throw ArgumentError("Invalid value: $value"),
+    );
+  }
+}
 
 class MatchRequestsModel {
   // Fields
-  final String id;
+  final String? id;
   static const String Id = 'id';
 
-  final DateTime created;
+  final DateTime? created;
   static const String Created = 'created';
 
-  final DateTime updated;
+  final DateTime? updated;
   static const String Updated = 'updated';
 
   final dynamic userId;
@@ -53,9 +57,9 @@ class MatchRequestsModel {
   static const String MatchId = 'match_id';
 
   const MatchRequestsModel({
-    required this.id,
-    required this.created,
-    required this.updated,
+    this.id,
+    this.created,
+    this.updated,
     this.userId,
     required this.budget,
     this.distance,
@@ -74,10 +78,10 @@ class MatchRequestsModel {
       userId: r.data['user_id'],
       budget: r.data['budget'],
       distance: r.data['distance'],
-      time: r.data['time'],
+      time: r.data['time'] != null ? DateTime.parse(r.data['time']) : null,
       latitude: r.data['latitude'],
       longitude: r.data['longitude'],
-      status: _statusEnumFromMap[r.data['status']]!,
+      status: StatusEnum.fromValue(r.data['status']! as String),
       matchId: r.data['match_id'],
     );
   }
@@ -87,10 +91,10 @@ class MatchRequestsModel {
       'user_id': userId,
       'budget': budget,
       'distance': distance,
-      'time': time,
+      'time': time?.toIso8601String(),
       'latitude': latitude,
       'longitude': longitude,
-      'status': _statusEnumToMap[status],
+      'status': status.value,
       'match_id': matchId,
     };
   }
