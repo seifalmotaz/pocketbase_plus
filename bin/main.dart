@@ -281,6 +281,35 @@ void generateConstructor(
   }
 
   buffer.writeln("  });");
+
+  // Add copyWith method after constructor
+  buffer.writeln("\n  ${removeSnake(capName(colName))}Model copyWith({");
+  buffer.writeln("    String? id,");
+  buffer.writeln("    DateTime? created,");
+  buffer.writeln("    DateTime? updated,");
+
+  for (var field in schema) {
+    var type = getType(field);
+    if (field.required && type != "dynamic") {
+      buffer.writeln("    ${getType(field)}? ${removeSnake(field.name)},");
+    } else {
+      buffer.writeln("    ${getType(field)}  ${removeSnake(field.name)},");
+    }
+  }
+
+  buffer.writeln("  }) {");
+  buffer.writeln("    return ${removeSnake(capName(colName))}Model(");
+  buffer.writeln("      id: id ?? this.id,");
+  buffer.writeln("      created: created ?? this.created,");
+  buffer.writeln("      updated: updated ?? this.updated,");
+
+  for (var field in schema) {
+    buffer.writeln(
+        "      ${removeSnake(field.name)}: ${removeSnake(field.name)} ?? this.${removeSnake(field.name)},");
+  }
+
+  buffer.writeln("    );");
+  buffer.writeln("  }");
 }
 
 /// Generates the factory constructor for creating an instance from a PocketBase model.
@@ -303,7 +332,7 @@ void generateFactoryConstructor(
             "       ${removeSnake(field.name)}: DateTime.parse(r.data['${field.name}']! as String),");
       } else {
         buffer.writeln(
-            "      ${removeSnake(field.name)}: r.data['${field.name}'] != null ? DateTime.parse(r.data['${field.name}']) : null,");
+            "      ${removeSnake(field.name)}: r.data['${field.name}'] != null && r.data['${field.name}'] != '' ? DateTime.parse(r.data['${field.name}']) : null,");
       }
     } else {
       buffer.writeln(
